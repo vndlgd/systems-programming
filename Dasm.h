@@ -23,7 +23,7 @@ public:
     void readFile(char *fileName);
     void readSymbol(char *fileName);
     void instructionAnalyzer(); // change to int 
-    void textRecordAnalyzer(int row);
+    void textRecordAnalyzer(int row, int position);
 
 private:
     void headerRecord(std::string line1);

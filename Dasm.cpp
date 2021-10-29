@@ -95,6 +95,8 @@ void Dasm::headerRecord(std::string line1)
  */
 void Dasm::textRecord(std::string textRecord)
 {
+    // std::string name = code.getMnemonic(textRecord)
+    // std::cout << textRecord
     /*
      * Need to keep track of PC. (where i am where the next line is going to be
      * start at 0.
@@ -139,30 +141,30 @@ void Dasm::diss()
         if (fileData[i][i][0] == 'H')
         {
             header = fileData[i][i];
-            std::cout << "Header Record: " << header << std::endl;
+            // std::cout << "Header Record: " << header << std::endl;
             headerRecord(header);
         }
         //text record
         else if (fileData[i][i][0] == 'T')
         {
             std::string text = fileData[i][i];
-            std::cout << "Text Record: " << text << std::endl;
+            // std::cout << "Text Record: " << text << std::endl;
         }
             //Modification Record
         else if (fileData[i][i][0] == 'M')
         {
             std::string modification = fileData[i][i];
-            std::cout << "Modification Record: " << modification << std::endl;
+            // std::cout << "Modification Record: " << modification << std::endl;
         }
             //End Record
         else if (fileData[i][i][0] == 'E')
         {
             std::string end = fileData[i][i];
-            endRecord(end, header);
-            std::cout << "End Record: " << end << std::endl;
+            //endRecord(end, header);
+            // std::cout << "End Record: " << end << std::endl;
         }
     }
-    std::cout << "Write to file completed." << std::endl;
+    // std::cout << "Write to file completed." << std::endl;
 }
 
 void Dasm::instructionAnalyzer() { // for text record
@@ -172,25 +174,15 @@ void Dasm::instructionAnalyzer() { // for text record
     {
         if (fileData[i][i][0] == 'T') 
         {
-            std::string startingAddress = fileData[i][i].substr(1, 6);
-            std::string textLength = fileData[i][i].substr(7, 2);
-            opcode = fileData[i][i].substr(9, 2);
-
-            std::cout << "Starting address for object code in this record: " << startingAddress << std::endl;
-            std::cout << "Length of Object Code: " << textLength << std::endl;
-            std::cout << "OpCode: " << opcode << std::endl;
-            break;
-            // char char_array[opcode.length() + 1];
-            // strcpy(char_array, opcode.c_str());
-            // std::cout << char_array << std::endl;
+            textRecordAnalyzer(i, 0);
         }
-        // put opcode into a char array , convert to int, get its mnemonic and format 
     }
 }
 
-void Dasm::textRecordAnalyzer(int row) {
+// need to find a way to do this 
+void Dasm::textRecordAnalyzer(int row, int position) {
     OpTab code = *new OpTab;
-    int current = 9;
+    int current = 9; // might be mistake cause it will always be 9 if you call this method again 
     std::string startingAddress = fileData[row][row].substr(1, 6);
     int textLength = (int)strtol(fileData[row][row].substr(7, 2).c_str(), NULL, 16);
     int opcode = (int)strtol(fileData[row][row].substr(current, 2).c_str(), NULL, 16);
@@ -210,12 +202,13 @@ void Dasm::textRecordAnalyzer(int row) {
 }
 
 void Dasm::format2(OpTab opcode, int instruction, int row, int position) {
-    std::string opCodeName = opcode.getMnemonic(instruction);
-    std::cout << "testing!" << std::endl;
+    OpTab code = *new OpTab;
+    std::string name = code.getMnemonic(instruction);
 
-    int r1; // 3rd char, convert from char to int and getRegister(r1)
-    int r2; // 4th char convert from char to int and getRegister(r2)
-
+    int register1 = (int)strtol(fileData[row][row].substr(position+2, 1).c_str(), NULL, 16); 
+    int register2 = (int)strtol(fileData[row][row].substr(position+3, 1).c_str(), NULL, 16); 
+    std::string objectCode = fileData[row][row].substr(position, 4);
+    std::cout << "Object Code: " << objectCode << std::endl;
 }
 
 int Dasm::format3(OpTab opcode, int instruction, int row, int position) {
@@ -235,7 +228,18 @@ int Dasm::format3(OpTab opcode, int instruction, int row, int position) {
     }
     else 
     {
-        // what else do we need to analyze format 3 ??? 
+        if (nixbpe[0] == 0 && nixbpe[1] == 1)
+        {
+            std::cout << "Immediate addressing" << std::endl;
+        } else if (nixbpe[0] == 1 && nixbpe[1] == 0) 
+        {
+            std::cout << "Indirect addressing" << std::endl;
+        } else if (nixbpe[0] == 1 && nixbpe[1] == 1)
+        {
+            std::cout << "This is simple addressing" << std::endl;
+        }
+        std::string objectCode = fileData[row][row].substr(position, 6);
+        std::cout << "Object Code: " << objectCode << std::endl;
     }
 }
 
@@ -243,7 +247,6 @@ int Dasm::format4(OpTab opcode, int instruction, int row, int position) {
     OpTab code = *new OpTab;
     bool nixbpe[6];
     std::string name = code.getMnemonic(instruction);
-    std::cout << "Instruction name: " << name << "+" << std::endl;
     int flags = (int)strtol(fileData[row][row].substr(position+1, 2).c_str(), NULL, 16);
     flags = flags & 0x3F; // remove 2 left most bits for nixbpe 
     for (int i = 0; i <= 5; i++)
@@ -260,7 +263,7 @@ int Dasm::format4(OpTab opcode, int instruction, int row, int position) {
     {
         std::cout << "This is simple addressing" << std::endl;
     }
-    std::string displacement = fileData[row][row].substr(position+3, 5);
-    std::cout << "Displacement: " << displacement << std::endl;
+    std::string objectCode = fileData[row][row].substr(position, 8);
+    std::cout << "Object Code: " << objectCode << std::endl;
 }
 

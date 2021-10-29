@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     newDisassembler.readFile(argv[1]);
     newDisassembler.readSymbol(argv[2]);
     newDisassembler.diss();
-    newDisassembler.textRecordAnalyzer(1);
+    newDisassembler.instructionAnalyzer();
 
     return 0;
 }
