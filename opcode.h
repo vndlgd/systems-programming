@@ -1,7 +1,7 @@
 //
 // Created by Ivan Delgado on 10/20/2021
 //
-
+#pragma once
 #ifndef OPCODE_H
 #define OPCODE_H
 
@@ -16,7 +16,7 @@
 #include <fstream>
 #include <cmath>
 
-class OpCode {
+class OpTab {
 
 public:
     std::string getMnemonic(int opCode);

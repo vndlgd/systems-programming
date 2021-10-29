@@ -15,7 +15,6 @@ std::vector<std::string> litLength;
 std::vector<std::string> litAddr;
 std::vector<std::string> litConst;
 
-
 //Read file data into a vector
 //https://www.tutorialspoint.com/how-to-read-a-text-file-with-cplusplus
 void Dasm::readFile(char *fileName)
@@ -166,17 +165,102 @@ void Dasm::diss()
     std::cout << "Write to file completed." << std::endl;
 }
 
-void Dasm::format2(OpCode opcode, std::string line, int instruction, int position) {
+void Dasm::instructionAnalyzer() { // for text record
+    std::string opcode;
+    OpTab code = *new OpTab; 
+    for (int i = 0; i < fileData.size(); i++)
+    {
+        if (fileData[i][i][0] == 'T') 
+        {
+            std::string startingAddress = fileData[i][i].substr(1, 6);
+            std::string textLength = fileData[i][i].substr(7, 2);
+            opcode = fileData[i][i].substr(9, 2);
+
+            std::cout << "Starting address for object code in this record: " << startingAddress << std::endl;
+            std::cout << "Length of Object Code: " << textLength << std::endl;
+            std::cout << "OpCode: " << opcode << std::endl;
+            break;
+            // char char_array[opcode.length() + 1];
+            // strcpy(char_array, opcode.c_str());
+            // std::cout << char_array << std::endl;
+        }
+        // put opcode into a char array , convert to int, get its mnemonic and format 
+    }
+}
+
+void Dasm::textRecordAnalyzer(int row) {
+    OpTab code = *new OpTab;
+    int current = 9;
+    std::string startingAddress = fileData[row][row].substr(1, 6);
+    int textLength = (int)strtol(fileData[row][row].substr(7, 2).c_str(), NULL, 16);
+    int opcode = (int)strtol(fileData[row][row].substr(current, 2).c_str(), NULL, 16);
+    std::cout << "Starting address in text record " << row << ": " << startingAddress << std::endl;
+    std::cout << "Length of object code in text record " << row << ": " << textLength << std::endl;
+
+    int opFormat = code.getFormat(opcode);
+    
+    if (opFormat == 2) 
+    {
+        format2(code, opcode, row, current);
+    }
+    else if (opFormat == 3)
+    {
+        format3(code, opcode, row, current);
+    }
+}
+
+void Dasm::format2(OpTab opcode, int instruction, int row, int position) {
     std::string opCodeName = opcode.getMnemonic(instruction);
+    std::cout << "testing!" << std::endl;
 
     int r1; // 3rd char, convert from char to int and getRegister(r1)
     int r2; // 4th char convert from char to int and getRegister(r2)
 
 }
 
-int Dasm::format3(OpCode opcode, std::string line, int instruction, int position) {
-    std::string opCodeName = opcode.getMnemonic(instruction);
+int Dasm::format3(OpTab opcode, int instruction, int row, int position) {
+    OpTab code = *new OpTab;
+    std::string opCodeName = code.getMnemonic(instruction);
+    int format = code.getFormat(instruction);
     bool nixbpe[6];
+    int flags = (int)strtol(fileData[row][row].substr(position+1, 2).c_str(), NULL, 16);
+    flags = flags & 0x3F; // remove 2 left most bits for nixbpe 
+    for (int i = 0; i <= 5; i++)
+    {
+        nixbpe[i] = code.getBitN(flags, 5-i); // nixbpe stored as [n, i, x, b, p, e], n being position 5
+    }
+    if (nixbpe[5] == 1) // if e = 1 (to determine if format 3 or 4)
+    {
+        format4(code, instruction, row, position);
+    }
+    else 
+    {
+        // what else do we need to analyze format 3 ??? 
+    }
+}
 
+int Dasm::format4(OpTab opcode, int instruction, int row, int position) {
+    OpTab code = *new OpTab;
+    bool nixbpe[6];
+    std::string name = code.getMnemonic(instruction);
+    std::cout << "Instruction name: " << name << "+" << std::endl;
+    int flags = (int)strtol(fileData[row][row].substr(position+1, 2).c_str(), NULL, 16);
+    flags = flags & 0x3F; // remove 2 left most bits for nixbpe 
+    for (int i = 0; i <= 5; i++)
+    {
+        nixbpe[i] = code.getBitN(flags, 5-i); // nixbpe stored as [n, i, x, b, p, e], n being position 5
+    }
+    if (nixbpe[0] == 0 && nixbpe[1] == 1)
+    {
+        std::cout << "Immediate addressing" << std::endl;
+    } else if (nixbpe[0] == 1 && nixbpe[1] == 0) 
+    {
+        std::cout << "Indirect addressing" << std::endl;
+    } else if (nixbpe[0] == 1 && nixbpe[1] == 1)
+    {
+        std::cout << "This is simple addressing" << std::endl;
+    }
+    std::string displacement = fileData[row][row].substr(position+3, 5);
+    std::cout << "Displacement: " << displacement << std::endl;
 }
 

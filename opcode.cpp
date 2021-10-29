@@ -5,13 +5,13 @@
 #include "opcode.h"
 #define OP_TABLE_SIZE 59
 
-struct OpCode {
+struct OpTabVals {
     std::string name;
     int OpCode;
     int format;
 };
 
-const struct OpCode opCodeTable[] = {
+const struct OpTabVals opCodeTable[] = {
     {"ADD", 0x18, 3},  {"ADDF", 0x58, 3},   {"ADDR", 0x90, 2},   {"AND", 0x40, 3},  {"CLEAR", 0xB4, 2},
     {"COMP", 0x28, 3}, {"COMPF", 0x88, 3},  {"COMPR", 0xA0, 2},  {"DIV", 0x24, 3},  {"DIVF", 0x64, 3},
     {"DIVR", 0x9C, 2}, {"FIX", 0xC4, 1},    {"FLOAT", 0xC0, 1},  {"HIO", 0xF4, 1},  {"J", 0x3C, 3},
@@ -27,37 +27,37 @@ const struct OpCode opCodeTable[] = {
 };
 
 // takes in opcode and retrieves its corresponding mnemonic
-std::string Opcode::getMnemonic(int opCode) { 
+std::string OpTab::getMnemonic(int opCode) { 
     for (int i = 0; i < OP_TABLE_SIZE; i++)
-            if (opCodeTable[i].OpCode == OpCode) 
+            if (opCodeTable[i].OpCode == opCode) 
             {
                 return opCodeTable[i].name;
             }
-        int newOpCode = OpCode & 0xFC;  //bit mask to get the first 6 bits
+        int newOpCode = opCode & 0xFC;  //bit mask to get the first 6 bits
         return getMnemonic(newOpCode); // using recursion 
 }
 
 // takes in opcode and gets corresponding format. Same process as getMnemonic
-int Opcode::getFormat(int opCode) { 
+int OpTab::getFormat(int opCode) { 
     for (int i = 0; i < OP_TABLE_SIZE; i++)
-        if (opCodeTable[i].OpCode == OpCode)
+        if (opCodeTable[i].OpCode == opCode)
         {
             return opCodeTable[i].format;
         }
-    int newOpCode = OpCode & 0xFC;
+    int newOpCode = opCode & 0xFC;
     return getFormat(newOpCode);
 }
 
 // retrieve a single bit of any input at any position N
 // https://stackoverflow.com/questions/9531214/access-individual-bits-in-a-char-c
-bool Opcode::getBitN(int input, int n) {
+bool OpTab::getBitN(int input, int n) {
     return ((input >> n) & 1);
 }
 
 // Conversion functions
 
 // char array to int 
-int Opcode::charArrayToInt(char num[]) {
+int OpTab::charArrayToInt(char num[]) {
    int len = strlen(num);
    int base = 1;
    int temp = 0;
@@ -75,7 +75,7 @@ int Opcode::charArrayToInt(char num[]) {
 }
 
 // hex char to int
-int Opcode::hexCharToDecimal(char a)
+int OpTab::hexCharToDecimal(char a)
 {
     int b = (int)a;
     b = b - 55; // handles hex conversion of A, B, C, D, E, F
@@ -83,7 +83,7 @@ int Opcode::hexCharToDecimal(char a)
 }
 
 // int to hex char
-char Opcode::decimalToHexChar(int a) 
+char OpTab::decimalToHexChar(int a) 
 {
     if (a > 9)
     {
@@ -103,7 +103,7 @@ char Opcode::decimalToHexChar(int a)
 }
 
 // gets mnemonic based off register number (Hard coded)
-std::string Opcode::getRegister(int a)
+std::string OpTab::getRegister(int a)
 {
     std::string mnemonic[] = {"A", "X", "L", "B", "S", "T", "F", "PC", "SW"};
 
